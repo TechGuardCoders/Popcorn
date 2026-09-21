@@ -62,7 +62,7 @@ def make_corpus(n: int = 400) -> list[str]:
         kind = rng.random()
         if kind < 0.3:
             pieces.append(
-                f"User waleed@techguard.io hit v2.14.3 endpoint at {rng.randint(1000,9999)}ms "
+                f"User ops@techguard.io hit v2.14.3 endpoint at {rng.randint(1000,9999)}ms "
                 f"  with payload size {rng.uniform(1, 99):.2f}KB\t\tretrying…")
         elif kind < 0.6:
             pieces.append(

@@ -18,8 +18,8 @@ def test_versions_folded():
 
 
 def test_emails_folded():
-    out = normalize_python("mail waleed@techguard.io please")
-    assert "<EMAIL>" in out and "waleed@techguard.io" not in out
+    out = normalize_python("mail ops@techguard.io please")
+    assert "<EMAIL>" in out and "ops@techguard.io" not in out
 
 
 def test_whitespace_collapsed_and_noise_dropped():
