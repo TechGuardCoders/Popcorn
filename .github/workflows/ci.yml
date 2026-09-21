@@ -1,0 +1,29 @@
+name: CI
+on:
+  push: { branches: [main] }
+  pull_request: { branches: [main] }
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install pytest numpy
+      - run: python -m pytest tests/ -q
+      - name: build C extension (linux gcc) + gate + benchmark
+        run: |
+          python scripts/extract_c.py
+          INC=$(python -c 'import sysconfig; print(sysconfig.get_paths()["include"])')
+          gcc -O2 -shared -fPIC -I"$INC" popcorn_c.c -o popcorn_c$(python -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))')
+          python - <<'EOF'
+          import sys; sys.path.insert(0, '.')
+          from popcorn import normalize_python, make_corpus, correctness_gate, bench
+          import popcorn_c
+          corpus = make_corpus()
+          base = [normalize_python(t) for t in corpus]
+          assert correctness_gate(base, [popcorn_c.normalize_c(t) for t in corpus]), "GATE FAILED"
+          py, c = bench(normalize_python, corpus), bench(popcorn_c.normalize_c, corpus)
+          print(f"gate PASSED 400/400 | python {py['mean_ms']}ms | C {c['mean_ms']}ms | speedup {py['mean_ms']/c['mean_ms']:.2f}x")
+          assert py['mean_ms'] / c['mean_ms'] > 2, "C impl slower than 2x? investigate"
+          EOF

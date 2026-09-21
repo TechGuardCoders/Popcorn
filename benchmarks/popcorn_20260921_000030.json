@@ -1,0 +1,17 @@
+{
+  "when": "2026-09-21 00:00:30",
+  "corpus": 400,
+  "rounds": 30,
+  "python": {
+    "mean_ms": 5.409,
+    "p50_ms": 5.102,
+    "p95_ms": 7.298
+  },
+  "c": {
+    "mean_ms": 0.382,
+    "p50_ms": 0.37,
+    "p95_ms": 0.529
+  },
+  "speedup": 14.16,
+  "correctness": "400/400 byte-identical"
+}

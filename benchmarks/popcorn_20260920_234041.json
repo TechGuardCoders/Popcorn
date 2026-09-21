@@ -1,0 +1,13 @@
+{
+  "when": "2026-09-20 23:40:41",
+  "corpus": 400,
+  "rounds": 30,
+  "results": {
+    "python": {
+      "mean_ms": 5.402,
+      "p50_ms": 5.203,
+      "p95_ms": 6.724
+    }
+  },
+  "speedup": null
+}

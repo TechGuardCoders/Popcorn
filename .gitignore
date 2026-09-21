@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyd
+*.so
+.env
+popcorn_c.c
