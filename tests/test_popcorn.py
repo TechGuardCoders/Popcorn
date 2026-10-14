@@ -37,3 +37,33 @@ def test_corpus_nonempty_and_stable():
 def test_gate_is_exact():
     assert correctness_gate(["a", "b"], ["a", "b"])
     assert not correctness_gate(["a", "b"], ["a ", "b"])  # byte-identical or fail
+
+
+# ------------------------------------------------- python-only robustness
+# The C impl is optional (no gcc → python-only run). The report must never
+# crash on a missing impl — regression guard for the summarize() path.
+
+def test_summarize_computes_speedup_when_both_impls_present():
+    from popcorn import summarize
+    r = summarize({"python": {"mean_ms": 5.0}, "c": {"mean_ms": 0.5}})
+    assert r["speedup"] == 10.0
+    assert r["python"]["mean_ms"] == 5.0  # inputs passed through untouched
+
+
+def test_summarize_python_only_run_is_none_not_crash():
+    from popcorn import summarize
+    r = summarize({"python": {"mean_ms": 5.0}})
+    assert r["speedup"] is None  # was a NameError before the fix
+
+
+def test_summarize_json_serializable_without_c():
+    import json
+    from popcorn import summarize
+    # the exact shape main() writes when gcc is unavailable
+    blob = json.dumps({"results": summarize({"python": {"mean_ms": 5.0}})})
+    assert '"speedup": null' in blob
+
+
+def test_summarize_guards_zero_division():
+    from popcorn import summarize
+    assert summarize({"python": {"mean_ms": 5.0}, "c": {"mean_ms": 0.0}})["speedup"] is None

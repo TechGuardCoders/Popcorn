@@ -100,6 +100,22 @@ def correctness_gate(baseline_out: list[str], other_out: list[str]) -> bool:
     return baseline_out == other_out
 
 
+def summarize(results: dict) -> dict:
+    """Fold raw per-impl bench results into the report shape.
+
+    Robustness: the C impl is OPTIONAL (no gcc on the box → python-only run).
+    Speedup is None unless BOTH impls are present — never a NameError, never
+    a division by a missing key. Default behavior for a full run is unchanged.
+    """
+    out = {name: dict(r) for name, r in results.items()}
+    out["speedup"] = (
+        results["python"]["mean_ms"] / results["c"]["mean_ms"]
+        if "python" in results and "c" in results and results["c"]["mean_ms"] > 0
+        else None
+    )
+    return out
+
+
 # ------------------------------------------------------------ C extension
 
 
@@ -294,22 +310,19 @@ def main():
               "baseline only (windows without gcc/cl)")
 
     print()
-    results = {}
-    for name, fn in impls.items():
-        r = bench(fn, corpus)
-        results[name] = r
+    results = summarize({name: bench(fn, corpus) for name, fn in impls.items()})
+    for name in impls:
+        r = results[name]
         print(f"{name:8s} mean {r['mean_ms']:8.3f}ms  p50 {r['p50_ms']:8.3f}ms  "
               f"p95 {r['p95_ms']:8.3f}ms")
-    if "python" in results and "c" in results:
-        speedup = results["python"]["mean_ms"] / results["c"]["mean_ms"]
-        print(f"\nspeedup C vs python: {speedup:.2f}x")
+    if results["speedup"] is not None:
+        print(f"\nspeedup C vs python: {results['speedup']:.2f}x")
 
     Path("benchmarks").mkdir(exist_ok=True)
     stamp = time.strftime("%Y%m%d_%H%M%S")
     Path(f"benchmarks/popcorn_{stamp}.json").write_text(
         json.dumps({"when": time.strftime("%Y-%m-%d %H:%M:%S"),
-                    "corpus": len(corpus), "rounds": 30, "results": results,
-                    "speedup": speedup if "python" in results and "c" in results else None},
+                    "corpus": len(corpus), "rounds": 30, "results": results},
                    indent=2))
 
 
