@@ -4,7 +4,7 @@
 
 FROM python:3.12-slim AS builder
 WORKDIR /build
-RUN apt-get update && apt-get install -y --no-install-recommends gcc \
+RUN apt-get update && apt-get install -y --no-install-recommends gcc libc6-dev \
     && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir numpy
 COPY scripts/extract_c.py scripts/
