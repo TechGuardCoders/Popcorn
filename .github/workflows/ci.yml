@@ -27,3 +27,12 @@ jobs:
           print(f"gate PASSED 400/400 | python {py['mean_ms']}ms | C {c['mean_ms']}ms | speedup {py['mean_ms']/c['mean_ms']:.2f}x")
           assert py['mean_ms'] / c['mean_ms'] > 2, "C impl slower than 2x? investigate"
           EOF
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Docker build smoke (multi-arch)
+        run: |
+          docker run --privileged --rm tonistiigi/binfmt --install all
+          docker buildx build --platform linux/amd64,linux/arm64 -t popcorn:ci .

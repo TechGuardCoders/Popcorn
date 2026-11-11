@@ -43,3 +43,14 @@ python -m pytest tests/ -q
 ## What's next
 
 This feeds **Benchwarmer (#15)**: the teardown report includes "when frameworks aren't enough" — measured, with the gate-caught bugs as the honesty exhibit.
+
+## Docker
+
+Multi-stage build on `python:3.12-slim`: the builder stage installs gcc + numpy, extracts and compiles the C extension; the runtime stage ships only the module, the compiled `.so`, and numpy.
+
+```bash
+docker build -t popcorn .
+docker run popcorn    # correctness gate + benchmark, writes benchmarks/
+```
+
+CI runs a multi-arch (`linux/amd64`, `linux/arm64`) buildx smoke on every push/PR.
