@@ -7,10 +7,10 @@ WORKDIR /build
 RUN apt-get update && apt-get install -y --no-install-recommends gcc \
     && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir numpy
-COPY scripts/extract_c.py .
+COPY scripts/extract_c.py scripts/
 COPY popcorn.py .
 # extract the C source and compile the extension against this interpreter
-RUN python extract_c.py \
+RUN python scripts/extract_c.py \
     && INC=$(python -c 'import sysconfig; print(sysconfig.get_paths()["include"])') \
     && gcc -O2 -shared -fPIC -I"$INC" popcorn_c.c \
        -o popcorn_c$(python -c 'import sysconfig; print(sysconfig.get_config_var("EXT_SUFFIX"))')
